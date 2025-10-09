@@ -73,6 +73,7 @@
 
 <script>
 import confetti from 'canvas-confetti';
+import { computed, watch, ref } from 'vue';
 
 export default {
   props: {
@@ -84,7 +85,6 @@ export default {
   },
   emits: ['trigger-event'],
   setup(props, { emit }) {
-    const { computed, watch, ref } = window.Vue;
 
     /* wwEditor:start */
     const isEditing = computed(() => props.wwEditorState?.isEditing);
