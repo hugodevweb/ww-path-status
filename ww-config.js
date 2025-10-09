@@ -16,22 +16,30 @@ export default {
         { 
           id: 'order_placed', 
           label: 'Order Placed', 
-          description: 'Your order has been received'
+          description: 'Your order has been received',
+          color: '#3b82f6',
+          isSuccess: false
         },
         { 
           id: 'processing', 
           label: 'Processing', 
-          description: 'We are preparing your order'
+          description: 'We are preparing your order',
+          color: '#f59e0b',
+          isSuccess: false
         },
         { 
           id: 'shipped', 
           label: 'Shipped', 
-          description: 'Your order is on the way'
+          description: 'Your order is on the way',
+          color: '#8b5cf6',
+          isSuccess: false
         },
         { 
           id: 'delivered', 
           label: 'Delivered', 
-          description: 'Order has been delivered'
+          description: 'Order has been delivered',
+          color: '#10b981',
+          isSuccess: true
         },
       ],
       options: {
@@ -44,7 +52,9 @@ export default {
           defaultValue: { 
             id: 'new_step', 
             label: 'New Step', 
-            description: ''
+            description: '',
+            color: '#3b82f6',
+            isSuccess: false
           },
           options: {
             item: {
@@ -53,7 +63,7 @@ export default {
                 type: 'Text',
                 bindable: true,
               },
-      label: {
+              label: {
                 label: { en: 'Label' }, 
                 type: 'Text',
                 bindable: true,
@@ -62,6 +72,18 @@ export default {
                 label: { en: 'Description' }, 
                 type: 'Text',
                 bindable: true,
+              },
+              color: {
+                label: { en: 'Color' },
+                type: 'Color',
+                bindable: true,
+                defaultValue: '#3b82f6',
+              },
+              isSuccess: {
+                label: { en: 'Is Success' },
+                type: 'OnOff',
+                bindable: true,
+                defaultValue: false,
               },
             },
           },
@@ -135,6 +157,48 @@ export default {
       bindingValidation: {
         type: 'string',
         tooltip: 'Field to use as step identifier (matched with Init Value)'
+      },
+      /* wwEditor:end */
+    },
+
+    stepsColorFormula: {
+      label: { en: 'Color Field' },
+      type: 'Formula',
+      section: 'settings',
+      options: content => ({
+        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+      }),
+      defaultValue: {
+        type: 'f',
+        code: "context.mapping?.['color']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Field to use as step color'
+      },
+      /* wwEditor:end */
+    },
+
+    stepsIsSuccessFormula: {
+      label: { en: 'Is Success Field' },
+      type: 'Formula',
+      section: 'settings',
+      options: content => ({
+        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+      }),
+      defaultValue: {
+        type: 'f',
+        code: "context.mapping?.['isSuccess']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'boolean',
+        tooltip: 'Field to use to determine if step triggers confetti'
       },
       /* wwEditor:end */
     },
@@ -472,14 +536,14 @@ export default {
       label: { en: 'Font Family' },
       type: 'Text',
       section: 'style',
-      defaultValue: 'Inter, system-ui, -apple-system, sans-serif',
+      defaultValue: 'Work Sans, system-ui, -apple-system, sans-serif',
       bindable: true,
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
         tooltip: 'CSS font family'
       },
-      propertyHelp: 'Set the font family for all text (e.g., "Inter, sans-serif")'
+      propertyHelp: 'Set the font family for all text (e.g., "Work Sans, sans-serif")'
       /* wwEditor:end */
     },
   },
