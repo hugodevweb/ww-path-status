@@ -63,7 +63,7 @@ export default {
                 type: 'Text',
                 bindable: true,
               },
-              label: {
+      label: {
                 label: { en: 'Label' }, 
                 type: 'Text',
                 bindable: true,
@@ -355,6 +355,24 @@ export default {
         type: 'string',
         tooltip: 'Space between steps (e.g., 24px, 2rem)'
       },
+      /* wwEditor:end */
+    },
+
+    stepSize: {
+      label: { en: 'Step Size' },
+      type: 'Number',
+      section: 'settings',
+      min: 24,
+      max: 80,
+      step: 2,
+      defaultValue: 40,
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'number',
+        tooltip: 'Size of the step indicator circle in pixels (24-80px)'
+      },
+      propertyHelp: 'Controls the size of step indicator circles and their font size proportionally'
       /* wwEditor:end */
     },
 

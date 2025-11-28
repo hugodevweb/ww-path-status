@@ -50,10 +50,10 @@
     <!-- Confirmation Panel - Replaces stepper when shown -->
     <div v-if="showConfirmation && pendingStep" class="confirmation-panel">
       <div class="confirmation-content">
-        <div class="confirmation-icon">
-          <span>{{ processedSteps.findIndex(s => s.id === pendingStep.id) + 1 }}</span>
-        </div>
-        <div class="confirmation-text">
+          <div class="confirmation-icon">
+            <span>{{ processedSteps.findIndex(s => s.id === pendingStep.id) + 1 }}</span>
+          </div>
+          <div class="confirmation-text">
           <span class="confirmation-title">{{ content?.confirmationTitle || 'Change Step?' }}</span>
           <span class="confirmation-message">{{ content?.confirmationMessage || 'Are you sure you want to change to this step?' }}</span>
           <span class="confirmation-step-name">→ {{ pendingStep.label }}</span>
@@ -111,31 +111,14 @@ export default {
     // Function to trigger confetti from a specific element
     const triggerConfettiFromElement = (element) => {
       if (!element) {
-        console.warn('⚠️ No element provided for confetti origin');
         return;
       }
       
-      console.log('🔍 Step indicator element received:', element);
-      
       // Get element position (element is already the step-indicator circle)
       const rect = element.getBoundingClientRect();
-      console.log('📏 Raw rect:', {
-        left: rect.left,
-        top: rect.top,
-        width: rect.width,
-        height: rect.height,
-        right: rect.right,
-        bottom: rect.bottom
-      });
-      console.log('📦 Element offsetParent:', element.offsetParent);
-      console.log('👁️ Element visible:', element.offsetWidth > 0 && element.offsetHeight > 0);
       
       // If rect width/height are 0, the element might not be visible yet
       if (rect.width === 0 || rect.height === 0) {
-        console.error('⚠️ Element has no dimensions! Width:', rect.width, 'Height:', rect.height);
-        console.error('Element:', element);
-        console.error('Element classes:', element.className);
-        console.error('Element computed style display:', window.getComputedStyle(element).display);
         // Don't fire confetti if element has no dimensions
         return;
       }
@@ -149,8 +132,6 @@ export default {
       const scrollX = frontWindow.scrollX || frontDocument.documentElement.scrollLeft || 0;
       const scrollY = frontWindow.scrollY || frontDocument.documentElement.scrollTop || 0;
       
-      console.log('📜 Scroll:', { scrollX, scrollY });
-      
       // Calculate center position including scroll
       const centerX = rect.left + rect.width / 2;
       const centerY = rect.top + rect.height / 2;
@@ -158,25 +139,6 @@ export default {
       // Normalize to 0-1 range
       const x = centerX / windowWidth;
       const y = centerY / windowHeight;
-      
-      console.log('🎯 Confetti origin calculated:', { 
-        x, 
-        y, 
-        rect: {
-          left: rect.left,
-          top: rect.top,
-          width: rect.width,
-          height: rect.height
-        },
-        windowWidth,
-        windowHeight,
-        scrollX,
-        scrollY,
-        centerX,
-        centerY,
-        normalizedX: x,
-        normalizedY: y
-      });
       
       // Fire confetti from the element position
       confetti({
@@ -188,11 +150,7 @@ export default {
         gravity: 1,
         ticks: 200,
       });
-      
-      console.log('🎉 Confetti fired from position:', { x, y });
     };
-    
-    console.log('🎨 Confetti function initialized');
 
     // Check if orientation is vertical
     const isVertical = computed(() => props.content?.orientation === 'vertical');
@@ -221,7 +179,7 @@ export default {
           currentStepIndex = index;
         }
 
-        const processedStep = {
+        return {
           id: finalId,
           label: label || `Step ${index + 1}`,
           description: description || '',
@@ -231,15 +189,6 @@ export default {
           originalItem: step,
           ...step,
         };
-        
-        console.log(`📋 Processed step ${index}:`, {
-          id: processedStep.id,
-          label: processedStep.label,
-          isSuccess: processedStep.isSuccess,
-          rawIsSuccess: step.isSuccess
-        });
-        
-        return processedStep;
       });
 
       // If no match found, default to first step
@@ -269,8 +218,6 @@ export default {
     watch(
       () => props.content?.initValue,
       (newValue, oldValue) => {
-        console.log('👀 InitValue watcher triggered:', { newValue, oldValue });
-        
         if (newValue !== undefined && newValue !== activeStepId.value) {
           setActiveStepId(newValue);
           
@@ -278,37 +225,26 @@ export default {
           if (oldValue !== undefined && oldValue !== newValue) {
             const newStepIndex = processedSteps.value.findIndex(s => String(s.id) === String(newValue));
             const newStep = processedSteps.value[newStepIndex];
-            console.log('🔍 Found step for initValue:', newStep, 'at index:', newStepIndex);
             
             if (newStep?.isSuccess) {
-              console.log('🎉 InitValue changed to success step, triggering confetti');
-              
               activeConfettiStepId.value = newStep.id;
               confettiKey.value += 1;
               
               // Wait for DOM to update and render
               setTimeout(() => {
                 const element = stepIndicators.value[newStepIndex];
-                console.log('📍 Step indicator element from watcher at index', newStepIndex, ':', element);
-                console.log('📍 All step indicators:', stepIndicators.value);
                 
                 if (element) {
                   // Additional small delay to ensure element is fully rendered and positioned
                   setTimeout(() => {
                     triggerConfettiFromElement(element);
                   }, 50);
-                } else {
-                  console.warn('⚠️ Could not find step indicator element at index:', newStepIndex);
-                  console.log('Available indicators:', stepIndicators.value.length);
                 }
               }, 200);
               
               setTimeout(() => {
-                console.log('⏰ Resetting confetti after timeout (watcher)');
                 activeConfettiStepId.value = null;
               }, 3000);
-            } else {
-              console.log('❌ New step is not a success step');
             }
           }
         }
@@ -317,15 +253,23 @@ export default {
     );
 
     // Component style
-    const componentStyle = computed(() => ({
-      '--completed-color': props.content?.completedColor || '#10b981',
-      '--current-color': props.content?.currentColor || '#3b82f6',
-      '--upcoming-color': props.content?.upcomingColor || '#9ca3af',
-      '--line-color': props.content?.lineColor || '#e5e7eb',
-      '--completed-line-color': props.content?.completedLineColor || props.content?.completedColor || '#10b981',
-      '--step-spacing': props.content?.stepSpacing || '24px',
-      '--font-family': props.content?.fontFamily || 'Work Sans, system-ui, -apple-system, sans-serif',
-    }));
+    const componentStyle = computed(() => {
+      const stepSize = props.content?.stepSize || 40;
+      return {
+        '--completed-color': props.content?.completedColor || '#10b981',
+        '--current-color': props.content?.currentColor || '#3b82f6',
+        '--upcoming-color': props.content?.upcomingColor || '#9ca3af',
+        '--line-color': props.content?.lineColor || '#e5e7eb',
+        '--completed-line-color': props.content?.completedLineColor || props.content?.completedColor || '#10b981',
+        '--step-spacing': props.content?.stepSpacing || '24px',
+        '--font-family': props.content?.fontFamily || 'Work Sans, system-ui, -apple-system, sans-serif',
+        '--step-size': `${stepSize}px`,
+        '--step-font-size': `${Math.max(12, Math.floor(stepSize * 0.4))}px`,
+        '--step-check-size': `${Math.max(16, Math.floor(stepSize * 0.5))}px`,
+        '--step-label-size': `${Math.max(12, Math.floor(stepSize * 0.35))}px`,
+        '--step-description-size': `${Math.max(10, Math.floor(stepSize * 0.3))}px`,
+      };
+    });
 
     // Get step indicator style based on status
     const getStepIndicatorStyle = (status, stepColor = null) => {
@@ -408,7 +352,6 @@ export default {
       const isCurrentStep = step.status === 'current';
       
       if (isCurrentStep) {
-        console.log('⏸️ Clicking on current step, ignoring click');
         return;
       }
 
@@ -426,48 +369,30 @@ export default {
 
     // Perform the actual step change
     const performStepChange = (step, index) => {
-      console.log('🔄 Step Change:', {
-        stepId: step.id,
-        stepLabel: step.label,
-        isSuccess: step.isSuccess,
-        status: step.status,
-        index: index
-      });
-
       // Update internal variable with step ID
       setActiveStepId(step.id);
 
       // Trigger confetti if this is a success step
       if (step.isSuccess) {
-        console.log('🎉 Triggering confetti for success step:', step.id, 'at index:', index);
-        
         activeConfettiStepId.value = step.id;
         confettiKey.value += 1;
         
         // Wait for DOM to update and render
         setTimeout(() => {
           const element = stepIndicators.value[index];
-          console.log('📍 Step indicator element at index', index, ':', element);
-          console.log('📍 All step indicators:', stepIndicators.value);
           
           if (element) {
             // Additional small delay to ensure element is fully rendered and positioned
             setTimeout(() => {
               triggerConfettiFromElement(element);
             }, 50);
-          } else {
-            console.warn('⚠️ Could not find step indicator element at index:', index);
-            console.log('Available indicators:', stepIndicators.value.length);
           }
         }, 200);
         
         // Reset confetti state after animation completes
         setTimeout(() => {
-          console.log('⏰ Resetting confetti after timeout');
           activeConfettiStepId.value = null;
         }, 3000);
-      } else {
-        console.log('❌ Not a success step, no confetti');
       }
 
       // Emit trigger event
@@ -517,17 +442,6 @@ export default {
             },
           });
         }
-      }
-    );
-
-    // Debug watcher for confetti state
-    watch(
-      [activeConfettiStepId, confettiKey],
-      ([stepId, key]) => {
-        console.log('🎯 Confetti state changed:', {
-          activeConfettiStepId: stepId,
-          confettiKey: key
-        });
       }
     );
 
@@ -624,14 +538,14 @@ export default {
 }
 
 .step-indicator {
-  width: 40px;
-  height: 40px;
+  width: var(--step-size, 40px);
+  height: var(--step-size, 40px);
   border-radius: 50%;
   border: 2px solid;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
+  font-size: var(--step-font-size, 16px);
   font-weight: 600;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
@@ -662,12 +576,12 @@ export default {
   }
   
   .check-icon {
-    font-size: 20px;
+    font-size: var(--step-check-size, 20px);
     font-weight: bold;
   }
   
   .step-number {
-    font-size: 16px;
+    font-size: var(--step-font-size, 16px);
   }
 }
 
@@ -785,9 +699,9 @@ export default {
   z-index: 1;
   
   // Horizontal layout - line connects from right of this step to left of next step
-  top: 20px; // Half of indicator height (40px / 2)
-  left: calc(50% + 20px); // Start from right edge of indicator (center + radius)
-  width: calc(50% + var(--step-spacing) + 50% - 40px); // Extend to left edge of next indicator
+  top: calc(var(--step-size, 40px) / 2); // Half of indicator height
+  left: calc(50% + var(--step-size, 40px) / 2); // Start from right edge of indicator (center + radius)
+  width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px)); // Extend to left edge of next indicator
   height: 2px;
   transform: translateY(-50%);
   
@@ -798,9 +712,9 @@ export default {
   
   // Vertical layout
   &.vertical {
-    top: calc(40px + 8px); // Below the indicator
+    top: calc(var(--step-size, 40px) + 8px); // Below the indicator
     bottom: -32px; // Extend to next step
-    left: 20px; // Center under indicator
+    left: calc(var(--step-size, 40px) / 2); // Center under indicator
     right: auto;
     width: 2px;
     height: auto;
@@ -826,7 +740,7 @@ export default {
 }
 
 .step-label {
-  font-size: 14px;
+  font-size: var(--step-label-size, 14px);
   line-height: 1.4;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
   word-wrap: break-word;
@@ -834,7 +748,7 @@ export default {
 }
 
 .step-description {
-  font-size: 12px;
+  font-size: var(--step-description-size, 12px);
   line-height: 1.5;
   margin-top: 4px;
   transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
@@ -853,32 +767,33 @@ export default {
   }
   
   .step-indicator {
-    width: 36px;
-    height: 36px;
-    font-size: 14px;
+    // Scale down to 90% of original size on mobile
+    width: calc(var(--step-size, 40px) * 0.9);
+    height: calc(var(--step-size, 40px) * 0.9);
+    font-size: calc(var(--step-font-size, 16px) * 0.875);
     
     .check-icon {
-    font-size: 18px;
+      font-size: calc(var(--step-check-size, 20px) * 0.9);
     }
   }
   
   .step-label {
-    font-size: 13px;
+    font-size: calc(var(--step-label-size, 14px) * 0.93);
   }
   
   .step-description {
-    font-size: 11px;
+    font-size: calc(var(--step-description-size, 12px) * 0.92);
   }
   
   .step-line {
     // Adjust line position for smaller indicators
-    top: 18px; // Half of 36px
-    left: calc(50% + 18px);
-    width: calc(50% + var(--step-spacing) + 50% - 36px);
+    top: calc(var(--step-size, 40px) * 0.45); // Half of 90% size
+    left: calc(50% + var(--step-size, 40px) * 0.45);
+    width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px) * 0.9);
     
     &.vertical {
-      top: calc(36px + 8px);
-      left: 18px;
+      top: calc(var(--step-size, 40px) * 0.9 + 8px);
+      left: calc(var(--step-size, 40px) * 0.45);
     }
   }
 }
@@ -900,7 +815,7 @@ export default {
     
     .step-line {
       top: auto;
-      left: 18px; // Half of 36px indicator on mobile
+      left: calc(var(--step-size, 40px) * 0.45); // Half of 90% size on mobile
       right: auto;
       bottom: -20px;
       width: 2px;
