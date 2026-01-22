@@ -217,36 +217,9 @@ export default {
     // Watch for initValue changes and update internal variable
     watch(
       () => props.content?.initValue,
-      (newValue, oldValue) => {
+      (newValue) => {
         if (newValue !== undefined && newValue !== activeStepId.value) {
           setActiveStepId(newValue);
-          
-          // Check if the new step is a success step and trigger confetti
-          if (oldValue !== undefined && oldValue !== newValue) {
-            const newStepIndex = processedSteps.value.findIndex(s => String(s.id) === String(newValue));
-            const newStep = processedSteps.value[newStepIndex];
-            
-            if (newStep?.isSuccess) {
-              activeConfettiStepId.value = newStep.id;
-              confettiKey.value += 1;
-              
-              // Wait for DOM to update and render
-              setTimeout(() => {
-                const element = stepIndicators.value[newStepIndex];
-                
-                if (element) {
-                  // Additional small delay to ensure element is fully rendered and positioned
-                  setTimeout(() => {
-                    triggerConfettiFromElement(element);
-                  }, 50);
-                }
-              }, 200);
-              
-              setTimeout(() => {
-                activeConfettiStepId.value = null;
-              }, 3000);
-            }
-          }
         }
       },
       { immediate: true }
