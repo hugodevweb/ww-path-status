@@ -5,6 +5,7 @@ export default {
     },
     icon: "view-list",
   },
+  
   properties: {
     // ========== CONTENT SECTION ==========
     statuses: {
