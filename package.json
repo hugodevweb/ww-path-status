@@ -6,7 +6,7 @@
     "serve": "weweb serve"
   },
   "dependencies": {
-    "canvas-confetti": "^1.9.3"
+    "canvas-confetti": "^1.9.4"
   },
   "devDependencies": {
     "@weweb/cli": "latest"

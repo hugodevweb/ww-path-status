@@ -7,77 +7,56 @@ export default {
   },
   properties: {
     // ========== CONTENT SECTION ==========
-    steps: {
-      label: { en: 'Steps' },
+    statuses: {
+      label: { en: 'Statuses' },
       type: 'Array',
       section: 'settings',
       bindable: true,
       defaultValue: [
-        { 
-          id: 'order_placed', 
-          label: 'Order Placed', 
-          description: 'Your order has been received',
-          color: '#3b82f6',
-          isSuccess: false
-        },
-        { 
-          id: 'processing', 
-          label: 'Processing', 
-          description: 'We are preparing your order',
-          color: '#f59e0b',
-          isSuccess: false
-        },
-        { 
-          id: 'shipped', 
-          label: 'Shipped', 
-          description: 'Your order is on the way',
-          color: '#8b5cf6',
-          isSuccess: false
-        },
-        { 
-          id: 'delivered', 
-          label: 'Delivered', 
-          description: 'Order has been delivered',
-          color: '#10b981',
-          isSuccess: true
-        },
+        { value: 'clerk', label: 'Clerc', sort_index: 0, parent: null },
+        { value: 'clerk_to_start', label: 'À lancer', sort_index: 1, parent: 'clerk' },
+        { value: 'clerk_compromis_signed', label: 'Compromis signé', sort_index: 2, parent: 'clerk' },
+        { value: 'formalities', label: 'Formalités', sort_index: 4, parent: null },
+        { value: 'formalities_to_visa', label: 'À viser', sort_index: 5, parent: 'formalities' },
+        { value: 'formalities_validated', label: 'Validé', sort_index: 6, parent: 'formalities' },
+        { value: 'accounting', label: 'Comptabilité', sort_index: 8, parent: null },
+        { value: 'accounting_to_settle', label: 'À solder', sort_index: 9, parent: 'accounting' },
+        { value: 'done', label: 'Clôturé', sort_index: 10, parent: 'accounting', isSuccess: true },
       ],
       options: {
         expandable: true,
         getItemLabel(item) {
-          return item.label || item.title || item.name || `Step ${item.id || 'Unknown'}`;
+          return item.label || item.value || 'Status';
         },
         item: {
           type: 'Object',
-          defaultValue: { 
-            id: 'new_step', 
-            label: 'New Step', 
-            description: '',
-            color: '#3b82f6',
-            isSuccess: false
+          defaultValue: {
+            value: 'new_status',
+            label: 'New Status',
+            sort_index: 0,
+            parent: null,
           },
           options: {
             item: {
-              id: { 
-                label: { en: 'ID' }, 
+              value: {
+                label: { en: 'Value' },
                 type: 'Text',
                 bindable: true,
               },
-      label: {
-                label: { en: 'Label' }, 
+              label: {
+                label: { en: 'Label' },
                 type: 'Text',
                 bindable: true,
               },
-              description: { 
-                label: { en: 'Description' }, 
-                type: 'Text',
+              sort_index: {
+                label: { en: 'Sort Index' },
+                type: 'Number',
                 bindable: true,
               },
-              color: {
-                label: { en: 'Color' },
-                type: 'Color',
+              parent: {
+                label: { en: 'Parent' },
+                type: 'Text',
                 bindable: true,
-                defaultValue: '#3b82f6',
               },
               isSuccess: {
                 label: { en: 'Is Success' },
@@ -92,134 +71,176 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'array',
-        tooltip: 'Array of step objects with id, label, and description'
+        tooltip: 'Array of status objects with value, label, sort_index, parent, and isSuccess'
       },
       /* wwEditor:end */
     },
 
     // Formula properties for dynamic field mapping
-    stepsLabelFormula: {
+    statusesValueFormula: {
+      label: { en: 'Value Field' },
+      type: 'Formula',
+      section: 'settings',
+      options: content => ({
+        template: Array.isArray(content.statuses) && content.statuses.length > 0 ? content.statuses[0] : null,
+      }),
+      defaultValue: {
+        type: 'f',
+        code: "context.mapping?.['value']",
+      },
+      hidden: (content, sidepanelContent, boundProps) =>
+        !Array.isArray(content.statuses) || !content.statuses?.length || !boundProps.statuses,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Field to use as status value identifier'
+      },
+      /* wwEditor:end */
+    },
+
+    statusesLabelFormula: {
       label: { en: 'Label Field' },
       type: 'Formula',
       section: 'settings',
       options: content => ({
-        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+        template: Array.isArray(content.statuses) && content.statuses.length > 0 ? content.statuses[0] : null,
       }),
       defaultValue: {
         type: 'f',
         code: "context.mapping?.['label']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+        !Array.isArray(content.statuses) || !content.statuses?.length || !boundProps.statuses,
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Field to use as step label'
+        tooltip: 'Field to use as status label'
       },
       /* wwEditor:end */
     },
 
-    stepsDescriptionFormula: {
-      label: { en: 'Description Field' },
+    statusesSortIndexFormula: {
+      label: { en: 'Sort Index Field' },
       type: 'Formula',
       section: 'settings',
       options: content => ({
-        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+        template: Array.isArray(content.statuses) && content.statuses.length > 0 ? content.statuses[0] : null,
       }),
       defaultValue: {
         type: 'f',
-        code: "context.mapping?.['description']",
+        code: "context.mapping?.['sort_index']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+        !Array.isArray(content.statuses) || !content.statuses?.length || !boundProps.statuses,
       /* wwEditor:start */
       bindingValidation: {
-        type: 'string',
-        tooltip: 'Field to use as step description'
+        type: 'number',
+        tooltip: 'Field to use as sort index for ordering'
       },
       /* wwEditor:end */
     },
 
-    stepsIdFormula: {
-      label: { en: 'ID Field' },
+    statusesParentFormula: {
+      label: { en: 'Parent Field' },
       type: 'Formula',
       section: 'settings',
       options: content => ({
-        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+        template: Array.isArray(content.statuses) && content.statuses.length > 0 ? content.statuses[0] : null,
       }),
       defaultValue: {
         type: 'f',
-        code: "context.mapping?.['id']",
+        code: "context.mapping?.['parent']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+        !Array.isArray(content.statuses) || !content.statuses?.length || !boundProps.statuses,
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Field to use as step identifier (matched with Init Value)'
+        tooltip: 'Field to use as parent reference (null for top-level groups)'
       },
       /* wwEditor:end */
     },
 
-    stepsColorFormula: {
-      label: { en: 'Color Field' },
-      type: 'Formula',
-      section: 'settings',
-      options: content => ({
-        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
-      }),
-      defaultValue: {
-        type: 'f',
-        code: "context.mapping?.['color']",
-      },
-      hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'string',
-        tooltip: 'Field to use as step color'
-      },
-      /* wwEditor:end */
-    },
-
-    stepsIsSuccessFormula: {
+    statusesIsSuccessFormula: {
       label: { en: 'Is Success Field' },
       type: 'Formula',
       section: 'settings',
       options: content => ({
-        template: Array.isArray(content.steps) && content.steps.length > 0 ? content.steps[0] : null,
+        template: Array.isArray(content.statuses) && content.statuses.length > 0 ? content.statuses[0] : null,
       }),
       defaultValue: {
         type: 'f',
         code: "context.mapping?.['isSuccess']",
       },
       hidden: (content, sidepanelContent, boundProps) =>
-        !Array.isArray(content.steps) || !content.steps?.length || !boundProps.steps,
+        !Array.isArray(content.statuses) || !content.statuses?.length || !boundProps.statuses,
       /* wwEditor:start */
       bindingValidation: {
         type: 'boolean',
-        tooltip: 'Field to use to determine if step triggers confetti'
+        tooltip: 'Field to determine if step triggers confetti'
       },
       /* wwEditor:end */
     },
 
-    initValue: {
-      label: { en: 'Init Value' },
+    currentStatus: {
+      label: { en: 'Current Status' },
       type: 'Text',
       section: 'settings',
       bindable: true,
-      defaultValue: 'processing',
+      defaultValue: 'clerk_compromis_signed',
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'The ID/status value from your API to match against step IDs'
+        tooltip: 'The value of the currently active status'
       },
-      propertyHelp: 'Set the current step by matching this value with step IDs. Steps before will be completed, steps after will be upcoming.'
+      propertyHelp: 'Set the current status by matching this value with status values. Statuses before will be done, statuses after will be pending.'
       /* wwEditor:end */
     },
 
-    showDescriptions: {
-      label: { en: 'Show Descriptions' },
+    subStepsLabel: {
+      label: { en: 'Sub-Steps Suffix' },
+      type: 'Text',
+      section: 'settings',
+      defaultValue: 'étapes',
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Text shown after the sub-step count (e.g. "étapes", "steps")'
+      },
+      /* wwEditor:end */
+    },
+
+    doneLabel: {
+      label: { en: 'Done Badge Label' },
+      type: 'Text',
+      section: 'settings',
+      defaultValue: 'Terminé',
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Badge text shown on completed parent groups'
+      },
+      /* wwEditor:end */
+    },
+
+    activeLabel: {
+      label: { en: 'Active Badge Label' },
+      type: 'Text',
+      section: 'settings',
+      defaultValue: 'En cours',
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Badge text shown on the current active parent group'
+      },
+      /* wwEditor:end */
+    },
+
+    enableParentStatus: {
+      label: { en: 'Show Sub-Steps' },
       type: 'OnOff',
       section: 'settings',
       defaultValue: true,
@@ -227,7 +248,22 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'boolean',
-        tooltip: 'Show/hide step descriptions'
+        tooltip: 'When enabled, clicking a group reveals its sub-steps. When disabled, only parent groups are shown.'
+      },
+      propertyHelp: 'Toggle between grouped mode (with expandable sub-steps) and flat mode (parent circles only)'
+      /* wwEditor:end */
+    },
+
+    showDescriptions: {
+      label: { en: 'Show Labels' },
+      type: 'OnOff',
+      section: 'settings',
+      defaultValue: true,
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'boolean',
+        tooltip: 'Show/hide step labels'
       },
       /* wwEditor:end */
     },
@@ -243,7 +279,7 @@ export default {
         type: 'boolean',
         tooltip: 'Allow users to click on steps'
       },
-      propertyHelp: 'Enable clicking on steps to trigger events and change the active step'
+      propertyHelp: 'Enable clicking on steps to trigger events and change the active status'
       /* wwEditor:end */
     },
 
@@ -257,9 +293,9 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'boolean',
-        tooltip: 'Show confirmation dialog before changing steps'
+        tooltip: 'Show confirmation dialog before changing status'
       },
-      propertyHelp: 'When enabled, users must confirm before navigating to a different step'
+      propertyHelp: 'When enabled, users must confirm before navigating to a different status'
       /* wwEditor:end */
     },
 
@@ -267,7 +303,7 @@ export default {
       label: { en: 'Confirmation Title' },
       type: 'Text',
       section: 'settings',
-      defaultValue: 'Change Step?',
+      defaultValue: 'Change Status?',
       bindable: true,
       hidden: content => !content?.clickable || !content?.requireConfirmation,
       /* wwEditor:start */
@@ -282,7 +318,7 @@ export default {
       label: { en: 'Confirmation Message' },
       type: 'Text',
       section: 'settings',
-      defaultValue: 'Are you sure you want to change to this step?',
+      defaultValue: 'Are you sure you want to change to this status?',
       bindable: true,
       hidden: content => !content?.clickable || !content?.requireConfirmation,
       /* wwEditor:start */
@@ -386,7 +422,7 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Color for completed steps'
+        tooltip: 'Fallback color for completed steps (used when step has no color)'
       },
       /* wwEditor:end */
     },
@@ -400,7 +436,7 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Color for the current active step'
+        tooltip: 'Fallback color for the current active step'
       },
       /* wwEditor:end */
     },
@@ -409,12 +445,12 @@ export default {
       label: { en: 'Upcoming Border Color' },
       type: 'Color',
       section: 'style',
-      defaultValue: '#9ca3af',
+      defaultValue: '#d1d5db',
       bindable: true,
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Border color for upcoming steps'
+        tooltip: 'Border color for upcoming/pending steps'
       },
       /* wwEditor:end */
     },
@@ -423,7 +459,7 @@ export default {
       label: { en: 'Upcoming Background Color' },
       type: 'Color',
       section: 'style',
-      defaultValue: '#ffffff',
+      defaultValue: '#f3f4f6',
       bindable: true,
       /* wwEditor:start */
       bindingValidation: {
@@ -456,7 +492,7 @@ export default {
       /* wwEditor:start */
       bindingValidation: {
         type: 'string',
-        tooltip: 'Color for lines connecting completed steps'
+        tooltip: 'Fallback color for lines connecting completed steps'
       },
       /* wwEditor:end */
     },
@@ -504,51 +540,6 @@ export default {
       /* wwEditor:end */
     },
 
-    completedDescColor: {
-      label: { en: 'Completed Description Color' },
-      type: 'Color',
-      section: 'style',
-      defaultValue: '#6b7280',
-      bindable: true,
-      hidden: content => !content?.showDescriptions,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'string',
-        tooltip: 'Description text color for completed steps'
-      },
-      /* wwEditor:end */
-    },
-
-    currentDescColor: {
-      label: { en: 'Current Description Color' },
-      type: 'Color',
-      section: 'style',
-      defaultValue: '#4b5563',
-      bindable: true,
-      hidden: content => !content?.showDescriptions,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'string',
-        tooltip: 'Description text color for current step'
-      },
-      /* wwEditor:end */
-    },
-
-    upcomingDescColor: {
-      label: { en: 'Upcoming Description Color' },
-      type: 'Color',
-      section: 'style',
-      defaultValue: '#d1d5db',
-      bindable: true,
-      hidden: content => !content?.showDescriptions,
-      /* wwEditor:start */
-      bindingValidation: {
-        type: 'string',
-        tooltip: 'Description text color for upcoming steps'
-      },
-      /* wwEditor:end */
-    },
-
     // ========== TYPOGRAPHY ==========
     fontFamily: {
       label: { en: 'Font Family' },
@@ -568,25 +559,33 @@ export default {
 
   triggerEvents: [
     {
-      name: 'step-click',
-      label: { en: 'On step click' },
+      name: 'status-click',
+      label: { en: 'On status click' },
       event: {
-        step: {},
-        index: 0,
-        id: '',
+        status: {},
+        value: '',
         label: '',
-        status: '',
+        derivedStatus: '',
+        isParent: false,
       },
       /* wwEditor:start */
       default: true,
       /* wwEditor:end */
     },
     {
-      name: 'step-change',
-      label: { en: 'On step change' },
+      name: 'status-change',
+      label: { en: 'On status change' },
       event: {
-        newStepId: '',
-        oldStepId: '',
+        newStatusValue: '',
+        oldStatusValue: '',
+      },
+    },
+    {
+      name: 'group-expand',
+      label: { en: 'On group expand' },
+      event: {
+        groupValue: '',
+        groupLabel: '',
       },
     },
   ],
