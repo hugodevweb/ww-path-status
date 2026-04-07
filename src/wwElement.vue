@@ -44,13 +44,13 @@
               </div>
             </div>
             <div v-if="content?.showDescriptions !== false" class="step-content">
-              <div class="step-label" :style="getLabelStyle(group.derivedStatus)">
+              <div class="step-label" :style="getLabelStyle(group)">
                 {{ group.label }}
               </div>
               <div v-if="group.children.length > 0" class="step-sub-count">
                 {{ group.children.length }} {{ content?.subStepsLabel || 'étapes' }}
               </div>
-              <div v-if="group.derivedStatus !== 'pending'" class="step-status-badge" :class="group.derivedStatus">
+              <div v-if="group.derivedStatus !== 'pending'" class="step-status-badge" :class="[group.derivedStatus, { state: group.sort_index == null }]">
                 {{ group.derivedStatus === 'done' ? (content?.doneLabel || 'Terminé') : (content?.activeLabel || 'En cours') }}
               </div>
             </div>
@@ -114,7 +114,7 @@
                   </div>
                 </div>
                 <div v-if="content?.showDescriptions !== false" class="step-content">
-                  <div class="step-label substep-label-size" :style="getLabelStyle(child.derivedStatus)">
+                  <div class="step-label substep-label-size" :style="getLabelStyle(child)">
                     {{ child.label }}
                   </div>
                 </div>
@@ -153,7 +153,7 @@
               </div>
             </div>
             <div v-if="content?.showDescriptions !== false" class="step-content">
-              <div class="step-label" :style="getLabelStyle(group.derivedStatus)">
+              <div class="step-label" :style="getLabelStyle(group)">
                 {{ group.label }}
               </div>
             </div>
@@ -372,12 +372,19 @@ export default {
         '--badge-done-border': hexToRgba(props.content?.completedColor || '#10b981', 0.35),
         '--badge-active-bg': hexToRgba(props.content?.currentColor || '#3b82f6', 0.12),
         '--badge-active-border': hexToRgba(props.content?.currentColor || '#3b82f6', 0.35),
+        '--state-color': props.content?.stateColor || '#6b7280',
+        '--state-text-color': props.content?.stateTextColor || '#374151',
+        '--badge-state-bg': hexToRgba(props.content?.stateColor || '#6b7280', 0.12),
+        '--badge-state-border': hexToRgba(props.content?.stateColor || '#6b7280', 0.35),
         '--line-gap': '8px',
       };
     });
 
+    const isStateItem = (item) => item.sort_index == null;
+
     const getIndicatorStyle = (item) => {
       const status = item.derivedStatus;
+      const isState = isStateItem(item);
 
       if (status === 'done') {
         const color = props.content?.completedColor || '#10b981';
@@ -388,7 +395,9 @@ export default {
         };
       }
       if (status === 'active') {
-        const color = props.content?.currentColor || '#3b82f6';
+        const color = isState
+          ? (props.content?.stateColor || '#6b7280')
+          : (props.content?.currentColor || '#3b82f6');
         return {
           backgroundColor: color,
           borderColor: color,
@@ -397,6 +406,14 @@ export default {
         };
       }
       // pending
+      if (isState) {
+        const color = props.content?.stateColor || '#6b7280';
+        return {
+          backgroundColor: props.content?.upcomingBackgroundColor || '#f3f4f6',
+          borderColor: color,
+          color: color,
+        };
+      }
       return {
         backgroundColor: props.content?.upcomingBackgroundColor || '#f3f4f6',
         borderColor: props.content?.upcomingColor || '#d1d5db',
@@ -410,12 +427,19 @@ export default {
           backgroundColor: props.content?.completedLineColor || '#10b981',
         };
       }
+      if (isStateItem(item) && item.derivedStatus === 'active') {
+        return {
+          backgroundColor: props.content?.stateColor || '#6b7280',
+        };
+      }
       return {
         backgroundColor: props.content?.lineColor || '#e5e7eb',
       };
     };
 
-    const getLabelStyle = (status) => {
+    const getLabelStyle = (item) => {
+      const status = typeof item === 'string' ? item : item.derivedStatus;
+      const isState = typeof item === 'object' && isStateItem(item);
       const style = {
         fontFamily: props.content?.fontFamily || 'Work Sans, system-ui, -apple-system, sans-serif',
       };
@@ -423,11 +447,15 @@ export default {
         style.color = props.content?.completedTextColor || '#374151';
         style.fontWeight = '500';
       } else if (status === 'active') {
-        style.color = props.content?.currentTextColor || '#1f2937';
+        style.color = isState
+          ? (props.content?.stateTextColor || '#374151')
+          : (props.content?.currentTextColor || '#1f2937');
         style.fontWeight = '600';
       } else {
-        style.color = props.content?.upcomingTextColor || '#9ca3af';
-        style.fontWeight = '400';
+        style.color = isState
+          ? (props.content?.stateTextColor || '#374151')
+          : (props.content?.upcomingTextColor || '#9ca3af');
+        style.fontWeight = isState ? '500' : '400';
       }
       return style;
     };
@@ -699,23 +727,23 @@ export default {
   justify-content: center;
   font-size: var(--step-font-size, 16px);
   font-weight: 600;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   flex-shrink: 0;
   z-index: 2;
 
   &.done {
-    animation: scaleIn 0.4s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: scaleIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     .check-icon {
-      animation: checkFadeIn 0.6s ease-in-out;
+      animation: checkFadeIn 0.35s ease-in-out;
     }
   }
 
   &.active {
-    animation: pulse 2s ease-in-out infinite, popIn 0.5s cubic-bezier(0.34, 1.56, 0.64, 1);
+    animation: pulse 2s ease-in-out infinite, popIn 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
 
     .step-number {
-      animation: numberPulse 0.5s ease-in-out;
+      animation: numberPulse 0.35s ease-in-out;
     }
   }
 
@@ -763,7 +791,7 @@ export default {
 .step-label {
   font-size: var(--step-label-size, 14px);
   line-height: 1.4;
-  transition: all 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   word-wrap: break-word;
   max-width: 100%;
 }
@@ -803,24 +831,30 @@ export default {
     border-color: var(--badge-active-border);
     color: var(--current-color);
   }
+
+  &.state.active {
+    background-color: var(--badge-state-bg);
+    border-color: var(--badge-state-border);
+    color: var(--state-color);
+  }
 }
 
 // ========== CONNECTOR LINES ==========
 .step-line {
   position: absolute;
   background-color: var(--line-color);
-  transition: background-color 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: background-color 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   z-index: 1;
 
   // Horizontal — gap before and after circles
   top: calc(var(--step-size, 40px) / 2);
   left: calc(50% + var(--step-size, 40px) / 2 + var(--line-gap, 8px));
-  width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px) - 2 * var(--line-gap, 8px));
+  width: calc(100% - var(--step-size, 40px) - 2 * var(--line-gap, 8px));
   height: 2px;
   transform: translateY(-50%);
 
   &.done {
-    animation: lineFillIn 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    animation: lineFillIn 0.45s cubic-bezier(0.4, 0, 0.2, 1);
   }
 
   // Vertical
@@ -834,7 +868,7 @@ export default {
     transform: translateX(-50%);
 
     &.done {
-      animation: lineFillInVertical 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+      animation: lineFillInVertical 0.45s cubic-bezier(0.4, 0, 0.2, 1);
     }
   }
 }
@@ -843,7 +877,7 @@ export default {
   // Substep horizontal line uses smaller indicator size + gap
   top: calc(var(--step-size, 40px) * 0.8 / 2);
   left: calc(50% + var(--step-size, 40px) * 0.8 / 2 + var(--line-gap, 8px));
-  width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px) * 0.8 - 2 * var(--line-gap, 8px));
+  width: calc(100% - var(--step-size, 40px) * 0.8 - 2 * var(--line-gap, 8px));
 
   &.vertical {
     top: calc(var(--step-size, 40px) * 0.8 + var(--line-gap, 8px));
@@ -920,11 +954,11 @@ export default {
 
 // ========== PANEL TRANSITION ==========
 .panel-slide-enter-active {
-  transition: opacity 0.25s ease, transform 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
 }
 
 .panel-slide-leave-active {
-  transition: opacity 0.15s ease, transform 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+  transition: opacity 0.08s ease;
 }
 
 .panel-slide-enter-from {
@@ -1038,7 +1072,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  animation: fadeIn 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+  animation: fadeIn 0.15s ease-out;
 }
 
 .confirmation-content {
@@ -1175,7 +1209,7 @@ export default {
   .step-line {
     top: calc(var(--step-size, 40px) * 0.45);
     left: calc(50% + var(--step-size, 40px) * 0.45 + var(--line-gap, 8px));
-    width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px) * 0.9 - 2 * var(--line-gap, 8px));
+    width: calc(100% - var(--step-size, 40px) * 0.9 - 2 * var(--line-gap, 8px));
 
     &.vertical {
       top: calc(var(--step-size, 40px) * 0.9 + var(--line-gap, 8px));
@@ -1186,7 +1220,7 @@ export default {
   .substep-line {
     top: calc(var(--step-size, 40px) * 0.36);
     left: calc(50% + var(--step-size, 40px) * 0.36 + var(--line-gap, 8px));
-    width: calc(50% + var(--step-spacing) + 50% - var(--step-size, 40px) * 0.72 - 2 * var(--line-gap, 8px));
+    width: calc(100% - var(--step-size, 40px) * 0.72 - 2 * var(--line-gap, 8px));
 
     &.vertical {
       top: calc(var(--step-size, 40px) * 0.72 + var(--line-gap, 8px));

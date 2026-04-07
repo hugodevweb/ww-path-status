@@ -498,6 +498,21 @@ export default {
       /* wwEditor:end */
     },
 
+    stateColor: {
+      label: { en: 'State Color' },
+      type: 'Color',
+      section: 'style',
+      defaultValue: '#6b7280',
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Accent color for state-type items (items without a sort index)'
+      },
+      propertyHelp: 'Color used for state items (no sort_index). Applied to the circle indicator and badge.'
+      /* wwEditor:end */
+    },
+
     // ========== TEXT COLORS ==========
     completedTextColor: {
       label: { en: 'Completed Text Color' },
@@ -537,6 +552,20 @@ export default {
       bindingValidation: {
         type: 'string',
         tooltip: 'Text color for upcoming step labels'
+      },
+      /* wwEditor:end */
+    },
+
+    stateTextColor: {
+      label: { en: 'State Text Color' },
+      type: 'Color',
+      section: 'style',
+      defaultValue: '#374151',
+      bindable: true,
+      /* wwEditor:start */
+      bindingValidation: {
+        type: 'string',
+        tooltip: 'Text color for state-type item labels'
       },
       /* wwEditor:end */
     },
