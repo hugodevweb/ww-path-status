@@ -91,7 +91,7 @@
             class="substeps-panel"
             :class="{ vertical: isVertical }"
           >
-            <div class="substeps-panel-header">
+            <div class="substeps-panel-header" :style="getLabelStyle(expandedGroupData)">
               {{ expandedGroupData.label }}
             </div>
             <div class="substeps-row" :class="{ vertical: isVertical }">
@@ -907,7 +907,6 @@ export default {
   font-weight: 700;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--completed-text-color);
   margin-bottom: 14px;
   padding-left: 4px;
 }
